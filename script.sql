@@ -1,35 +1,76 @@
+-- Active: 1712670173221@@127.0.0.1@5432@20241_fatec_ipi_pbdi_cursores
+-- um bloquinho anonimo
+DO $$
+DECLARE
+	--1. Cursor não vinculado
+	cur_delete REFCURSOR;
+	tupla RECORD;
+BEGIN
+	--2. Abrir cursor
+	OPEN cur_delete SCROLL FOR
+		SELECT * FROM tb_youtubers;
+	LOOP
+	-- pego a proxima linha
+		FETCH cur_delete INTO tupla;
+	-- saio se for o caso
+		EXIT WHEN NOT FOUND;
+	-- olho para o video_count da tupla
+		IF tupla.video_count IS NULL THEN
+	-- se for null faço delete
+			DELETE FROM tb_youtubers WHERE CURRENT OF cur_delete;
+		END IF;
+	END LOOP;
+
+	LOOP
+		FETCH BACKWARD FROM cur_delete INTO tupla;
+		EXIT WHEN NOT FOUND;
+		RAISE NOTICE '%', tupla;
+	END LOOP;
+	CLOSE cur_delete;
+END;
+$$
+
+
+
+
+
+
+
+
+
+
 --cursor com parâmetro nomeado e por ordem
 -- exibir nomes dos youtubers que começaram a partir de 2010
 -- e que têm pelo menos, 60m de inscritos
 
 -- bloquinho anônimo
-DO $$
-DECLARE
-	-- 1. Declaração cursor
-	v_ano INT := 2010;
-	v_inscritos INT := 60000000;
-	cur_ano_inscritos CURSOR (ano INT, inscritos INT) FOR
-	SELECT youtuber FROM tb_youtubers WHERE started >= ano AND subscribers >= inscritos;
-	v_youtuber VARCHAR(200);
-BEGIN
-	-- 2. Abertura
-	-- essa, argumentos pela ordem
-	-- OPEN cur_ano_inscritos(v_ano, v_inscritos):
-	-- ou essa, argumentos pelo nome
-	OPEN cur_ano_inscritos(inscritos := v_inscritos, ano := v_ano);
-	LOOP
-		-- buscar o nome
-		-- 3. Recuperação
-		FETCH cur_ano_inscritos INTO v_youtuber;
-		-- sair, se for o caso
-		EXIT WHEN NOT FOUND;
-		--exibir se puder
-		RAISE NOTICE '%', v_youtuber;
-	END LOOP;
-	-- 4. Fechamento
-	CLOSE cur_ano_inscritos;
-END;
-$$
+-- DO $$
+-- DECLARE
+-- 	-- 1. Declaração cursor
+-- 	v_ano INT := 2010;
+-- 	v_inscritos INT := 60000000;
+-- 	cur_ano_inscritos CURSOR (ano INT, inscritos INT) FOR
+-- 	SELECT youtuber FROM tb_youtubers WHERE started >= ano AND subscribers >= inscritos;
+-- 	v_youtuber VARCHAR(200);
+-- BEGIN
+-- 	-- 2. Abertura
+-- 	-- essa, argumentos pela ordem
+-- 	-- OPEN cur_ano_inscritos(v_ano, v_inscritos):
+-- 	-- ou essa, argumentos pelo nome
+-- 	OPEN cur_ano_inscritos(inscritos := v_inscritos, ano := v_ano);
+-- 	LOOP
+-- 		-- buscar o nome
+-- 		-- 3. Recuperação
+-- 		FETCH cur_ano_inscritos INTO v_youtuber;
+-- 		-- sair, se for o caso
+-- 		EXIT WHEN NOT FOUND;
+-- 		--exibir se puder
+-- 		RAISE NOTICE '%', v_youtuber;
+-- 	END LOOP;
+-- 	-- 4. Fechamento
+-- 	CLOSE cur_ano_inscritos;
+-- END;
+-- $$
 
 
 -- cursor vinculado(bound)
